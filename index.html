@@ -1,23 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Atmospheric Golems | Rialo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atmospheric Golems | Rialo Demo</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        h1 { font-size: 3em; color: #58a6ff; }
-        .golem { font-size: 5em; margin: 20px; }
-        .box { border: 1px solid #30363d; padding: 20px; max-width: 400px; margin: 0 auto; border-radius: 10px; background: #161b22; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; font-size: 1.2em; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        /* Cyberpunk / Crypto Aesthetic */
+        body { background-color: #050505; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 20px; }
+        h1 { text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #00ff41; font-size: 1.8em; }
+        
+        .container { max-width: 500px; margin: 0 auto; border: 1px solid #333; padding: 20px; border-radius: 12px; background: #111; box-shadow: 0 0 20px rgba(0, 255, 65, 0.1); }
+        
+        /* The Golem Display */
+        .golem-preview { font-size: 80px; margin: 20px 0; transition: all 0.5s ease; filter: drop-shadow(0 0 15px #ffffff55); }
+        
+        .stats-box { text-align: left; background: #000; padding: 15px; border: 1px dashed #444; margin-top: 15px; font-size: 0.9em; color: #aaa; }
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .highlight { color: #fff; font-weight: bold; }
+
+        /* Buttons */
+        button { width: 100%; padding: 15px; margin-top: 15px; font-size: 1em; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; transition: 0.2s; }
+        .btn-connect { background: #333; color: white; border: 1px solid #555; }
+        .btn-mint { background: #00ff41; color: black; display: none; } /* Hidden until connected */
+        
+        /* Loading Animation */
+        .status-log { margin-top: 20px; font-size: 0.8em; color: #555; height: 20px; }
     </style>
 </head>
 <body>
-    <div class="golem">🗿⛈️</div>
-    <h1>Atmospheric Golems</h1>
-    <div class="box">
-        <p><b>Dynamic NFTs on Rialo Network</b></p>
-        <p>Our Golems evolve based on real-world weather data using Native HTTP Triggers.</p>
-        <p><i>Building in progress...</i></p>
-        <button>Join Waitlist</button>
+
+    <div class="container">
+        <h1>Atmospheric Golems</h1>
+        <p style="color: #666; font-size: 0.8em;">Rialo Native HTTP Demo (Devnet 1337)</p>
+        
+        <div id="golemDisplay" class="golem-preview">❓</div>
+
+        <div class="stats-box">
+            <div class="stat-line"><span>Location:</span> <span id="loc" class="highlight">Unconnected</span></div>
+            <div class="stat-line"><span>Weather:</span> <span id="weather" class="highlight">--</span></div>
+            <div class="stat-line"><span>Temp:</span> <span id="temp" class="highlight">--</span></div>
+            <div class="stat-line"><span>Rialo Hash:</span> <span id="hash" class="highlight">Waiting...</span></div>
+        </div>
+
+        <button id="btnConnect" class="btn-connect" onclick="connectWallet()">🔌 Connect Wallet</button>
+        <button id="btnMint" class="btn-mint" onclick="mintGolem()">⛏️ Mint Golem</button>
+        
+        <div id="log" class="status-log"></div>
     </div>
+
+    <script>
+        // 1. Simulate Wallet Connection
+        function connectWallet() {
+            const btn = document.getElementById('btnConnect');
+            const log = document.getElementById('log');
+            
+            btn.innerText = "Connecting...";
+            log.innerText = "Requesting signature from Rialo Wallet...";
+
+            setTimeout(() => {
+                // Fake a wallet address
+                btn.innerText = "🟢 0x71C...9A2";
+                btn.style.borderColor = "#00ff41";
+                btn.disabled = true;
+                
+                // Show the Mint button
+                document.getElementById('btnMint').style.display = "block";
+                log.innerText = "Wallet Connected. Ready to mint.";
+            }, 1500);
+        }
+
+        // 2. The Core Feature: Fetch REAL Weather (Simulating Rialo Native HTTP)
+        async function mintGolem() {
+            const log = document.getElementById('log');
+            const golem = document.getElementById('golemDisplay');
+            const btn = document.getElementById('btnMint');
+
+            btn.disabled = true;
+            btn.innerText = "📡 Fetching Real-World Data...";
+            log.innerText = "Contract executing HTTP GET request...";
+
+            // simulating on-chain delay
+            await new Promise(r => setTimeout(r, 1500));
+
+            try {
+                // ACTUALLY fetch real weather for London (Free API, no key needed)
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true');
+                const data = await response.json();
+                
+                const temp = data.current_weather.temperature;
+                const code = data.current_weather.weathercode;
+                
+                // Update UI with REAL data
+                document.getElementById('loc').innerText = "London, UK";
+                document.getElementById('temp').innerText = temp + "°C";
+                document.getElementById('hash').innerText = "0x" + Math.floor(Math.random()*16777215).toString(16) + "..."; // Fake hash
+
+                // Logic to change the Art based on Data
+                if (temp < 5) {
+                    golem.innerText = "❄️🗿"; // Ice Golem
+                    document.getElementById('weather').innerText = "Freezing";
+                    log.innerText = "Sub-zero temps detected. Minted ICE GOLEM.";
+                } else if (code > 50) { // Rain codes in OpenMeteo
+                    golem.innerText = "🌿🗿"; // Moss Golem
+                    document.getElementById('weather').innerText = "Raining";
+                    log.innerText = "High humidity detected. Minted MOSS GOLEM.";
+                } else {
+                    golem.innerText = "🔥🗿"; // Stone/Fire Golem
+                    document.getElementById('weather').innerText = "Clear/Dry";
+                    log.innerText = "Dry conditions. Minted STONE GOLEM.";
+                }
+
+                btn.innerText = "✅ Minted Successfully";
+                
+            } catch (error) {
+                log.innerText = "Error fetching weather data.";
+            }
+        }
+    </script>
 </body>
 </html>
